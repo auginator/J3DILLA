@@ -1,0 +1,215 @@
+<html>
+    <head>
+        <title>TEST ---- F.A.T | J3Dilla | auginator fork</title>
+        <style>canvas { width: 100%; height: 100% }</style>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" href="styles/styles.css">
+    </head>
+    <body>
+        <script type="text/javascript" src="js/three.js"></script>
+		<script type="text/javascript" src="js/loaders/STLLoader.js"></script>
+		<script type="text/javascript" src="js/Detector.js"></script>
+		<script type="text/javascript" src="js/Stats.js"></script>
+		
+    	<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+
+        <script> 
+
+		$(document).ready(function() {
+        	var mouseX = 0, mouseY = 0;
+
+        	/* Configure colors here */
+        	var directionlLightColor = 0xE7635E;
+        	var ambientLightColor = 0x00928C;
+        	var materialColor = 0xF8E9A8;
+
+        	var fov = 75;
+        	
+        	var scene = new THREE.Scene();
+        	var camera = new THREE.PerspectiveCamera(fov, window.innerWidth/window.innerHeight, 0.1, 1000);
+				// camera.position.x = 500; camera.position.y = 250; camera.position.z = 500;
+				//console.log(camera.position);
+			var ambient = new THREE.AmbientLight( ambientLightColor );
+			scene.add( ambient );
+
+			var directionalLight = new THREE.DirectionalLight( directionlLightColor );
+				directionalLight.position.set( 0, 0, 1 ).normalize();
+
+			scene.add( directionalLight );
+
+        	var renderer = new THREE.WebGLRenderer();
+        		renderer.setSize(window.innerWidth, window.innerHeight);
+        	
+        	document.body.appendChild(renderer.domElement);
+        	
+        	//This will be the 3D model 
+        	var object;
+			var material = new THREE.MeshLambertMaterial({color: materialColor});			
+			var loader = new THREE.STLLoader();
+
+			loader.addEventListener( 'load', function ( event ) {
+				object = event.content;
+				if(material instanceof THREE.Material) {
+					for ( var i = 0; i < object.children.length; i ++ ) {
+					   object.children[ i ].material = material;
+					   object.children[ i ].rotation.x = 5;
+					}
+				  }
+				object.updateMatrix(); // Not sure if this is needed.
+				stl = object;
+
+				/* 
+					Rewrite this to have an init method? 
+				*/
+				//init();
+				/* 
+					Other examples I have seen use an animate() method...
+					maybe it is for animating 3D models. 
+				*/
+				//animate();
+				scene.add( object );
+
+				
+				camera.lookAt(object.children[0].position);
+				console.log(object.children[0].position);
+				// Start rendered, now that our STL had loaded and is ready to go. 
+				render();
+			} );
+			loader.load( 'myModels/tentacle.stl');
+
+
+        	//Set the camera distance
+        	//TODO: Have this change depending on the object dimensions. 
+        	camera.position.z = 200;
+
+        	function render() { 
+				//object.children[ 0 ].rotation.z += 0.01;
+        		requestAnimationFrame(render);
+        		renderer.render(scene, camera);
+        	}
+			
+			function get2dDimensions(object) {
+				//var width = 640, height = 480;
+				var width = window.innerWidth;
+				var height = window.innerHeight;
+				var widthHalf = width / 2, heightHalf = height / 2;
+
+				var projector = new THREE.Projector();
+				var vector = projector.projectVector( object.matrixWorld.getPosition().clone(), camera );
+
+				vector.x = ( vector.x * widthHalf ) + widthHalf;
+				vector.y = - ( vector.y * heightHalf ) + heightHalf;
+				return vector;
+			}
+			/*----
+
+				Testing UI
+			
+			--*/			
+			var mouseDown = false;
+			var vec1 = [0,0];
+			var vec2 = [0,0];
+
+			function onWindowResize() {
+				//camera.aspect = window.innerWidth/window.innerHeight;
+				//camera.updateProjectionMatrix();
+				camera = new THREE.PerspectiveCamera(fov, window.innerWidth/window.innerHeight, 0.1, 1000);
+				windowHalfX = window.innerWidth / .5;
+				windowHalfY = window.innerHeight / .5;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function onDocumentMouseMove( e ) {
+				if(mouseDown) {
+					vec2[0] =  e.clientX;
+					vec2[1] =  e.clientY;
+					object.children[ 0 ].rotation.x -= (0.00015*(vec1[1] - vec2[1]));
+					object.children[ 0 ].rotation.z -= (0.0001*(vec1[0] - vec2[0]));
+					//console.log("["+(vec1[0] - vec2[0])+","+(vec1[1]-vec2[1])+"]");
+					//console.log(object.children[ 0 ].rotation.z);
+				}
+				// mouseX = ( e.clientX - windowHalfX ) / .50;
+				// mouseY = ( e.clientY - windowHalfY ) / .50;
+				// mouseZ = ( e.clientz - windowHalfZ ) / .50;
+			}
+
+			function uiClick(e) {
+				switch(e.currentTarget.id) {
+					case 'upBtn':
+						console.log('up');
+						camera.position.y += 20;
+					break;
+					case 'downBtn':
+						camera.position.y -= 20;
+						console.log('down');
+					break;
+					case 'leftBtn':
+						camera.position.x -= 20;
+						console.log('left');
+					break;
+					case 'rightBtn':
+						camera.position.x += 20;
+						console.log('right');
+					break;
+					default:
+						console.log('default');
+					break;
+				}
+				
+				camera.lookAt(object.children[0].position);
+				//console.log(camera.position);
+			}
+			function onDocumentMouseDown(e) {mouseDown = true;
+				vec1[0] =  e.clientX;
+				vec1[1] =  e.clientY;
+				console.log(vec1);
+			}
+			
+			function onDocumentMouseUp(e) {
+				mouseDown = false;
+				var v=get2dDimensions(object);
+				// console.log('2D dimensions');
+				// console.log(v);
+			}
+
+			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+			document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+			window.addEventListener( 'resize', onWindowResize, false );
+
+			$('.uiButton').click(uiClick);
+		});
+        	//render();
+        </script> 
+
+        <div id="controlPanel">
+        	<p><a href="index.html">Back to Index</a></a></p>
+        	<p>Download  <a href="myModels/tentacle.stl">tentacle.stl</a></a></p>
+        	<p><a href="runJ3Dilla.php">Regenerate</a></p>
+
+        	<table align="center">
+        		<tr>
+        			<td>&nbsp;</td>
+        			<td align="center"><a href="#" class="uiButton" id="upBtn">y++</a></td>
+        			<td>&nbsp;</td>		
+        		</tr>		
+        		<tr>
+        			<td align="center"><a href="#" class="uiButton" id="leftBtn">x--</a></td>
+        			<td>&nbsp;</td>
+        			<td align="center"><a href="#" class="uiButton" id="rightBtn">x++</a></td>		
+        		</tr>		
+        		<tr>
+        			<td>&nbsp;</td>
+        			<td align="center"><a href="#" class="uiButton" id="downBtn">y--</a></td>
+        			<td>&nbsp;</td>		
+        		</tr>		
+        	</table>
+
+    	</div>
+    </body>
+</html>

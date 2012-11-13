@@ -7,12 +7,11 @@
 		<link rel="stylesheet" href="styles/styles.css">
     </head>
     <body>
+    	<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
         <script type="text/javascript" src="js/three.js"></script>
 		<script type="text/javascript" src="js/loaders/STLLoader.js"></script>
 		<script type="text/javascript" src="js/Detector.js"></script>
 		<script type="text/javascript" src="js/Stats.js"></script>
-		
-    	<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
 
         <script> 
         	
@@ -74,7 +73,7 @@
 				// Start rendered, now that our STL had loaded and is ready to go. 
 				render();
 			} );
-			loader.load( 'myModels/xxx.stl');
+			loader.load( 'myModels/exquisitecrifttumelo.stl');
 
 
         	//Set the camera distance
@@ -99,8 +98,28 @@
 				// mouseZ = ( event.clientz - windowHalfZ ) / .50;
 			}
 
+			function returnKey(evt)
+			{
+				console.log(evt.keyCode);
+
+				var evt  = (evt) ? evt : ((event) ? event : null);
+				var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+			 
+				if ((evt.keyCode == 13) && (node.type == "text")) 
+				{
+					switch(node.id)
+					{
+						case 'search':
+							getProduct();
+							$('search').select();
+							break;
+					}
+				}
+			}
+
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 			window.addEventListener( 'resize', onWindowResize, false );
+			document.addEventListener( 'keypress', returnKey);
 
         	function render() { 
 				object.children[ 0 ].rotation.z += 0.01;
@@ -110,10 +129,9 @@
 
         	//render();
         </script> 
-
         <div id="controlPanel">
         	<p><a href="index.html">Back to Index</a></a></p>
-        	<p>Download  <a href="myModels/xxx.stl">xxx.stl</a></a></p>
+        	<p>Download  <a href="myModels/exquisitecrifttumelo.stl">exquisitecrifttumelo.stl</a></a></p>
         	<p><a href="runJ3Dilla.php">Regenerate</a></p>
 
         	<table align="center">

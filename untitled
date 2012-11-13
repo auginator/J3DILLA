@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <title>My first Three.js app</title>
+        <style>canvas { width: 100%; height: 100% }</style>
+    </head>
+    <body>
+    	<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+        <script type="text/javascript" src="https://raw.github.com/mrdoob/three.js/master/build/three.js"></script>
+		<script type="text/javascript" src="js/loaders/STLLoader.js"></script>
+
+        <script> 
+        	
+        	var mouseX = 0, mouseY = 0;
+
+        	/* Configure colors here */
+        	var directionlLightColor = 0xE7635E;
+        	var ambientLightColor = 0x00928C;
+        	var materialColor = 0xF8E9A8;
+        	
+        	var scene = new THREE.Scene();
+        	var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+			var ambient = new THREE.AmbientLight( ambientLightColor );
+			scene.add( ambient );
+
+			var directionalLight = new THREE.DirectionalLight( directionlLightColor );
+				directionalLight.position.set( 0, 0, 1 ).normalize();
+
+			scene.add( directionalLight );
+
+        	var renderer = new THREE.WebGLRenderer();
+        		renderer.setSize(window.innerWidth, window.innerHeight);
+        	
+        	document.body.appendChild(renderer.domElement);
+        	
+        	//This will be the 3D model 
+        	var object;
+
+			var material = new THREE.MeshLambertMaterial({color: materialColor});
+			
+			var loader = new THREE.STLLoader();
+
+			loader.addEventListener( 'load', function ( event ) {
+				object = event.content;
+				// Optionally apply some sort of material...
+				if(material instanceof THREE.Material) {
+					for ( var i = 0; i < object.children.length; i ++ ) {
+					   object.children[ i ].material = material;
+					   object.children[ i ].rotation.x = 5;
+					}
+				  }
+				object.updateMatrix(); // Not sure if this is needed.
+				stl = object;
+
+				/* 
+					Rewrite this to have an init method? 
+				*/
+				//init();
+				/* 
+					Other examples I have seen use an animate() method...
+					maybe it is for animating 3D models. 
+				*/
+				//animate();
+				scene.add( object );
+
+				camera.lookAt(object.children[ i ]);
+				
+				// Start rendered, now that our STL had loaded and is ready to go. 
+				render();
+			} );
+			loader.load( 'myModels/FATNIKA.stl');
+
+
+        	//scene.add(cube);
+        	camera.position.z = 200;
+
+        	function render() { 
+				object.children[ 0 ].rotation.z += 0.01;
+        		requestAnimationFrame(render);
+        		renderer.render(scene, camera);
+        	}
+
+        	//render();
+        </script> 
+    </body>
+</html>
